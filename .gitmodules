@@ -1,0 +1,3 @@
+[submodule "BoardUI"]
+	path = BoardUI
+	url = https://github.com/ukrgerri4/BoardUI.git
