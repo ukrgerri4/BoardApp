@@ -1,4 +1,5 @@
 ﻿using BoardApp.Models.Authorization;
+using BoardWebApp.Definitions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -49,7 +50,7 @@ namespace BoardApp.Controllers
             var claims = new List<Claim>()
                 {
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                    new Claim(JwtRegisteredClaimNames.Sid, user.Id)
+                    new Claim(JwtCustomClaimNames.Id, user.Id)
                 };
 
             var jwtToken = new JwtSecurityToken(

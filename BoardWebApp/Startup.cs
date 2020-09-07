@@ -9,7 +9,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace BoardApp
@@ -49,22 +51,44 @@ namespace BoardApp
                 //    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 
                 //})
-                .AddJwtBearer(cfg =>
+                .AddJwtBearer(options =>
                 {
-                    cfg.Events = new JwtBearerEvents
+                    options.RequireHttpsMetadata = false;
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        // укзывает, будет ли валидироваться издатель при валидации токена
+                        //ValidateIssuer = true,
+                        // строка, представляющая издателя
+                        //ValidIssuer = AuthOptions.ISSUER,
+
+                        // будет ли валидироваться потребитель токена
+                        //ValidateAudience = true,
+                        // установка потребителя токена
+                        //ValidAudience = AuthOptions.AUDIENCE,
+                        // будет ли валидироваться время существования
+                        ValidateLifetime = true,
+
+                        // установка ключа безопасности
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["Authorization:Jwt:SecretKey"])),
+                        // валидация ключа безопасности
+                        ValidateIssuerSigningKey = true,
+                    };
+                    options.Events = new JwtBearerEvents
                     {
                         OnMessageReceived = context =>
                         {
-                            var accessToken = context.Request.Query["access_token"];
                             // If the request is for our hub...
                             var path = context.HttpContext.Request.Path;
-                            if (!string.IsNullOrEmpty(accessToken)
-                                && (path.StartsWithSegments("/hubs"))
-                            )
+                            if (path.StartsWithSegments("/hubs"))
                             {
-                                // Read the token out of the query string
-                                context.Token = accessToken;
+                                var accessToken = context.Request.Query["access_token"];
+                                if (!string.IsNullOrEmpty(accessToken))
+                                {
+                                    // Read the token out of the query string
+                                    context.Token = accessToken;
+                                }
                             }
+
                             return Task.CompletedTask;
                         }
                     };
