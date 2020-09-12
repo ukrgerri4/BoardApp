@@ -1,13 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 namespace BoardApp
 {
@@ -17,23 +10,22 @@ namespace BoardApp
         {
             var host = CreateHostBuilder(args).Build();
 
+            //using (var scope = host.Services.CreateScope())
+            //{
+            //    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+            //    await userManager.CreateAsync(new IdentityUser { Id = "Z^kwGY", UserName = "igor" }, "123");
+            //    await userManager.CreateAsync(new IdentityUser { Id = "uCBu#f", UserName = "zepsen" }, "123");
+            //    await userManager.CreateAsync(new IdentityUser { Id = "R#&vdU", UserName = "marina" }, "123");
+            //    await userManager.CreateAsync(new IdentityUser { Id = "IweH&n", UserName = "yulia" }, "123");
+            //    await userManager.CreateAsync(new IdentityUser { Id = "WxEE#k", UserName = "stas" }, "123");
+            //    await userManager.CreateAsync(new IdentityUser { Id = "CwQQ2%", UserName = "katiya" }, "123");
+            //    await userManager.CreateAsync(new IdentityUser { Id = "mdI0@@", UserName = "sasha" }, "123");
+            //    await userManager.CreateAsync(new IdentityUser { Id = "pc*Nc@", UserName = "aliona" }, "123");
+            //    await userManager.CreateAsync(new IdentityUser { Id = "a$M*Mc", UserName = "vika" }, "123");
+            //    await userManager.CreateAsync(new IdentityUser { Id = "FaJ^h1", UserName = "gleb" }, "123");
+            //}
 
-            using (var scope = host.Services.CreateScope())
-            {
-                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
-                await userManager.CreateAsync(new IdentityUser { Id = "Z^kwGY", UserName = "igor" }, "123");
-                await userManager.CreateAsync(new IdentityUser { Id = "uCBu#f", UserName = "zepsen" }, "123");
-                await userManager.CreateAsync(new IdentityUser { Id = "R#&vdU", UserName = "marina" }, "123");
-                await userManager.CreateAsync(new IdentityUser { Id = "IweH&n", UserName = "yulia" }, "123");
-                await userManager.CreateAsync(new IdentityUser { Id = "WxEE#k", UserName = "stas" }, "123");
-                await userManager.CreateAsync(new IdentityUser { Id = "CwQQ2%", UserName = "katiya" }, "123");
-                await userManager.CreateAsync(new IdentityUser { Id = "mdI0@@", UserName = "sasha" }, "123");
-                await userManager.CreateAsync(new IdentityUser { Id = "pc*Nc@", UserName = "aliona" }, "123");
-                await userManager.CreateAsync(new IdentityUser { Id = "a$M*Mc", UserName = "vika" }, "123");
-                await userManager.CreateAsync(new IdentityUser { Id = "FaJ^h1", UserName = "gleb" }, "123");
-            }
-
-            host.Run();
+            await host.RunAsync();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

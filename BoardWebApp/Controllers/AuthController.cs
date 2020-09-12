@@ -46,7 +46,7 @@ namespace BoardApp.Controllers
             var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configuration["Authorization:Jwt:SecretKey"]));
 
             var tokenIssueDateTime = DateTime.UtcNow;
-            var tokenExpireDateTime = tokenIssueDateTime.Add(TimeSpan.FromMinutes(10));
+            var tokenExpireDateTime = tokenIssueDateTime.Add(TimeSpan.FromDays(365));
             var claims = new List<Claim>()
                 {
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
