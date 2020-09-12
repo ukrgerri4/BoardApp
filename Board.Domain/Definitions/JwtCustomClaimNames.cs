@@ -1,4 +1,4 @@
-﻿namespace BoardWebApp.Definitions
+﻿namespace Board.Domain.Definitions
 {
     public struct JwtCustomClaimNames
     {

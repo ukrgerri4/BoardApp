@@ -1,17 +1,20 @@
+using Board.Application.Application.Authorization.Commands.Login;
+using Board.Application.Interfaces.Services;
+using Board.DataLayer;
+using Board.Infrastructure.Services;
 using BoardApp.Hubs;
+using BoardWebApp.Extensions;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System;
-using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -26,11 +29,12 @@ namespace BoardApp
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
+
         public void ConfigureServices(IServiceCollection services)
         {
             //services.AddDbContext<ApplicationDbContext>(options => options.UseInMemoryDatabase(databaseName: "BoardDb"));
-            services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite("Data Source=DbBoardApp.db"));
+            var connectionString = Configuration.GetConnectionString("Default");
+            services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite(connectionString));
 
             services.AddIdentity<IdentityUser, IdentityRole>(options =>
                 {
@@ -115,29 +119,33 @@ namespace BoardApp
                 options.KeepAliveInterval = TimeSpan.FromMinutes(1);
             });
 
+            /* FOR SPA */
             //services.AddSpaStaticFiles(configuration =>
             //{
             //    configuration.RootPath = "wwwroot";
             //});
+            /* FOR SPA */
+
+            services.AddMediatR(typeof(LoginCommand));
+            services.AddScoped<ITokenService, TokenService>();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseCors("CorsPolicy");
 
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
+            app.UseMiddleware<ExceptionMiddleware>();
 
             //app.UseHttpsRedirection();
 
+
+            /* FOR SPA */
             //app.UseStaticFiles();
             //if (!env.IsDevelopment())
             //{
             //    app.UseSpaStaticFiles();
             //}
+            /* FOR SPA */
 
             app.UseRouting();
 
@@ -155,6 +163,7 @@ namespace BoardApp
                 });
             });
 
+            /* FOR SPA */
             //app.UseSpa(spa =>
             //{
             //    // To learn more about options for serving an Angular SPA from ASP.NET Core,
@@ -167,6 +176,7 @@ namespace BoardApp
             //        spa.UseAngularCliServer(npmScript: "start-spa");
             //    }
             //});
+            /* FOR SPA */
         }
     }
 }
