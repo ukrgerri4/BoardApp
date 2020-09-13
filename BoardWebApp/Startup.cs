@@ -63,14 +63,14 @@ namespace BoardApp
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
                         // укзывает, будет ли валидироваться издатель при валидации токена
-                        //ValidateIssuer = true,
+                        ValidateIssuer = false,
                         // строка, представляющая издателя
                         //ValidIssuer = AuthOptions.ISSUER,
 
                         // будет ли валидироваться потребитель токена
-                        //ValidateAudience = true,
-                        // установка потребителя токена
-                        //ValidAudience = AuthOptions.AUDIENCE,
+                        ValidateAudience = false,
+                        //установка потребителя токена
+                        //ValidAudience = Configuration["Authorization:Jwt:Audience"],
                         // будет ли валидироваться время существования
                         ValidateLifetime = true,
 
@@ -159,7 +159,12 @@ namespace BoardApp
                 endpoints.MapHub<ResistanceHub>("/hubs/resistance", options =>
                 {
                     options.LongPolling.PollTimeout = TimeSpan.FromMinutes(1);
-                    options.Transports = HttpTransportType.LongPolling | HttpTransportType.WebSockets;
+                    options.Transports = HttpTransportType.WebSockets | HttpTransportType.LongPolling;
+                });
+                endpoints.MapHub<ResistanceHub>("/hubs/mafia", options =>
+                {
+                    options.LongPolling.PollTimeout = TimeSpan.FromMinutes(1);
+                    options.Transports = HttpTransportType.WebSockets | HttpTransportType.LongPolling;
                 });
             });
 

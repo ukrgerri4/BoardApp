@@ -5,10 +5,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BoardApp.Hubs
+namespace BoardWebApp.Hubs
 {
     [Authorize]
-    public class ResistanceHub: Hub
+    public class MafiaHub: Hub
     {
         public async Task Send(string message)
         {
@@ -19,7 +19,7 @@ namespace BoardApp.Hubs
         {
             return "created";
         }
-        
+
 
         public override async Task OnConnectedAsync()
         {
