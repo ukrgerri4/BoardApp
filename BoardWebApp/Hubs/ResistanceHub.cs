@@ -17,7 +17,7 @@ namespace BoardApp.Hubs
 
         public async Task<string> CreateGame()
         {
-            return "created";
+            return Guid.NewGuid().ToString();
         }
         
 
