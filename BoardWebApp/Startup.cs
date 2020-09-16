@@ -36,7 +36,7 @@ namespace BoardApp
             var connectionString = Configuration.GetConnectionString("Default");
             services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite(connectionString));
 
-            services.AddIdentity<IdentityUser, IdentityRole>(options =>
+            services.AddIdentity<IdentityUser<int>, IdentityRole<int>>(options =>
                 {
                     options.Password.RequireDigit = false;
                     options.Password.RequiredLength = 3;
@@ -114,10 +114,13 @@ namespace BoardApp
             });
 
             services.AddControllers();
-            services.AddSignalR(options =>
-            {
-                options.KeepAliveInterval = TimeSpan.FromMinutes(1);
-            });
+            services
+                .AddSignalR(options => {
+                    options.KeepAliveInterval = TimeSpan.FromMinutes(1);
+                })
+                .AddJsonProtocol(options => {
+                    options.PayloadSerializerOptions.IgnoreNullValues = true;
+                });
 
             /* FOR SPA */
             //services.AddSpaStaticFiles(configuration =>
