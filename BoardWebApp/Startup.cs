@@ -36,7 +36,7 @@ namespace BoardApp
             var connectionString = Configuration.GetConnectionString("Default");
             services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite(connectionString));
 
-            services.AddIdentity<IdentityUser<int>, IdentityRole<int>>(options =>
+            services.AddIdentity<IdentityUser, IdentityRole>(options =>
                 {
                     options.Password.RequireDigit = false;
                     options.Password.RequiredLength = 3;
