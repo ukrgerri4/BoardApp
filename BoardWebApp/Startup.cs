@@ -1,8 +1,9 @@
 using Board.Application.Application.Authorization.Commands.Login;
 using Board.Application.Interfaces.Services;
 using Board.DataLayer;
+using Board.Infrastructure.Hubs;
 using Board.Infrastructure.Services;
-using BoardApp.Hubs;
+using Board.Infrastructure.Services.SignalR;
 using BoardWebApp.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -131,6 +133,8 @@ namespace BoardApp
 
             services.AddMediatR(typeof(LoginCommand));
             services.AddScoped<ITokenService, TokenService>();
+            services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
+            services.AddSingleton<IGameService, GameService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -164,7 +168,7 @@ namespace BoardApp
                     options.LongPolling.PollTimeout = TimeSpan.FromMinutes(1);
                     options.Transports = HttpTransportType.WebSockets | HttpTransportType.LongPolling;
                 });
-                endpoints.MapHub<ResistanceHub>("/hubs/mafia", options =>
+                endpoints.MapHub<MafiaHub>("/hubs/mafia", options =>
                 {
                     options.LongPolling.PollTimeout = TimeSpan.FromMinutes(1);
                     options.Transports = HttpTransportType.WebSockets | HttpTransportType.LongPolling;

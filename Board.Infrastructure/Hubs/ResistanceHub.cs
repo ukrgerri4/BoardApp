@@ -1,16 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace BoardApp.Hubs
+namespace Board.Infrastructure.Hubs
 {
     [Authorize]
-    public class ResistanceHub: Hub
+    public class ResistanceHub : Hub
     {
         private ResistanceState _state = new ResistanceState
         {
@@ -35,7 +32,7 @@ namespace BoardApp.Hubs
         {
             return Guid.NewGuid().ToString();
         }
-        
+
 
         public override async Task OnConnectedAsync()
         {
@@ -49,7 +46,7 @@ namespace BoardApp.Hubs
     {
         [JsonPropertyName("ph")]
         public byte Phase { get; set; }
-        
+
         [JsonPropertyName("rd")]
         public byte Round { get; set; }
 
