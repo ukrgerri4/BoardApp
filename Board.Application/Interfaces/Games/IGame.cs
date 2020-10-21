@@ -1,14 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using Board.Application.Enumerations;
+using System.Collections.Generic;
 
 namespace Board.Application.Interfaces.Models
 {
     public interface IGame
-    {
+    { 
         string Id { get; set; }
-        List<string> PlayerIds { get; set; }
+        string Name { get; set; }
+        GameState State { get; set; }
 
-        void End();
         void Start();
+        void Pause();
+        void End();
         void Update();
 
         void RemovePlayer(string playerId);

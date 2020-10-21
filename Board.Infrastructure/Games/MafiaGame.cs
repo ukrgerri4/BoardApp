@@ -1,4 +1,5 @@
-﻿using Board.Application.Interfaces.Models;
+﻿using Board.Application.Enumerations;
+using Board.Application.Interfaces.Models;
 using Board.Infrastructure.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,21 +15,27 @@ namespace Board.Infrastructure.Games
     public class MafiaGame : IGame
     {
         private readonly IServiceScopeFactory _serviceScopeFactory;
-
-        private bool active = false;
-
         public string Id { get; set; }
-        public List<string> PlayerIds { get; set; }
+        public string Name { get; set; }
+        public GameState State { get; set; }
+
+
+        private List<string> ConnectedPlayerIds { get; set; }
+        private List<string> StartPlayerIds { get; set; }
 
         private Subject<Unit> _notifyer = new Subject<Unit>();
         private Subject<Unit> _destroy = new Subject<Unit>();
+
 
         public MafiaGame(IServiceScopeFactory serviceScopeFactory)
         {
             _serviceScopeFactory = serviceScopeFactory;
 
             Id = Guid.NewGuid().ToString();
-            PlayerIds = new List<string>();
+            Name = $"Game-{Id}";
+            State = GameState.Created;
+            ConnectedPlayerIds = new List<string>();
+            StartPlayerIds = new List<string>();
 
             //Observable.Interval(TimeSpan.FromMilliseconds(1000))
             //    .TakeUntil(_destroy)
@@ -37,21 +44,26 @@ namespace Board.Infrastructure.Games
 
             _notifyer.AsObservable()
                 .TakeUntil(_destroy)
-                //.Throttle(TimeSpan.FromSeconds(1))
                 .Sample(TimeSpan.FromMilliseconds(1000))
-                .Where(_ => active)
+                .Where(_ => State != GameState.Ended)
                 .Do(_ => Console.WriteLine($"Send - {Id}"))
                 .Subscribe(_ => Notify());
         }
 
         public void Start()
         {
-            active = true;
+            State = GameState.Started;
+            StartPlayerIds = ConnectedPlayerIds.ToList();
+        }
+
+        public void Pause()
+        {
+            State = GameState.Paused;
         }
 
         public void End()
         {
-            active = false;
+            State = GameState.Ended;
             _destroy.OnNext(Unit.Default);
             _destroy.OnCompleted();
             _notifyer.OnCompleted();
@@ -64,12 +76,12 @@ namespace Board.Infrastructure.Games
 
         public void AddPlayer(string playerId)
         {
-            PlayerIds.Add(playerId);
+            ConnectedPlayerIds.Add(playerId);
         }
 
         public void RemovePlayer(string playerId)
         {
-            PlayerIds.Remove(playerId);
+            ConnectedPlayerIds.Remove(playerId);
         }
 
         private void Notify()
@@ -77,7 +89,7 @@ namespace Board.Infrastructure.Games
             using (var scope = _serviceScopeFactory.CreateScope())
             {
                 var hubContext = scope.ServiceProvider.GetRequiredService<IHubContext<MafiaHub>>();
-                hubContext.Clients.Users(PlayerIds.ToList()).SendAsync("game-state", "test");
+                hubContext.Clients.Users(ConnectedPlayerIds.ToList()).SendAsync("game-state", "test");
             }
         }
     }
