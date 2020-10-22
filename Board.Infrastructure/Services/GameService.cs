@@ -1,23 +1,43 @@
-﻿using Board.Application.Interfaces.Models;
+﻿using Board.Application.Interfaces.Games.Factory;
+using Board.Application.Interfaces.Models;
 using Board.Application.Interfaces.Services;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace Board.Infrastructure.Services
 {
     public class GameService: IGameService
     {
-        public Dictionary<string, string> UsersInGame { get; set; } = new Dictionary<string, string>();
-        public Dictionary<string, IGame> LiveGames { get; set; } = new Dictionary<string, IGame>();
+        private readonly IGameFactory _gameFactory;
 
-        public void RemovePlayer(string playerId)
+        private ConcurrentDictionary<string, IGame> _games { get; set; } = new ConcurrentDictionary<string, IGame>();
+
+
+        public GameService(IGameFactory gameFactory)
         {
-            var game = LiveGames.GetValueOrDefault(playerId);
-            if (game != null)
-            {
-                game.RemovePlayer(playerId);
-            }
+            _gameFactory = gameFactory;
+        }
 
-            UsersInGame.Remove(playerId);
+
+        public ICollection<IGame> Games => _games.Values;
+
+
+        public void AddGame<T>() where T: IGame
+        {
+            var game = _gameFactory.Create<T>();
+            _games.TryAdd(game.Id, game);
+        }
+
+        public void RemoveGame(IGame game)
+        {
+            RemoveGame(game.Id);
+        }
+
+        public void RemoveGame(string gameId)
+        {
+            _games.TryRemove(gameId, out _);
         }
     }
 }

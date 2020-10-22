@@ -1,4 +1,5 @@
-﻿using Board.Application.Enumerations;
+﻿using Boadr.Domain.Enumerations;
+using Board.Application.Interfaces.Games.Factory;
 using Board.Application.Interfaces.Services;
 using Board.Common.Models;
 using Board.Infrastructure.Games;
@@ -6,7 +7,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -17,41 +17,43 @@ namespace Board.Infrastructure.Hubs
     public class MafiaHub : Hub
     {
         private readonly IGameService _gameService;
-        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly IActiveUserService _activeUserService;
+        private readonly IGameFactory _gameFactory;
 
-        public MafiaHub(IServiceScopeFactory serviceScopeFactory, IGameService gameService)
+        public MafiaHub(
+            IActiveUserService activeUserService,
+            IGameService gameService,
+            IGameFactory gameFactory)
         {
-            _serviceScopeFactory = serviceScopeFactory;
             _gameService = gameService;
+            _activeUserService = activeUserService;
+            _gameFactory = gameFactory;
         }
 
         public HubResult Games()
         {
-            var avalibleGames = _gameService.LiveGames
-                .Where(g => g.Value.State == GameState.Created)
-                .Select(g => new 
-                {
-                    g.Value.Id,
-                    g.Value.Name,
-                    g.Value.State
-                })
+            var avalibleGames = _gameService.Games
+                .Where(g => g is MafiaGame)
+                .Where(g => g.State == GameState.Created)
+                .Select(g => (g as MafiaGame).ConnectInfo())
                 .ToList();
             return HubResult.Ok(new { avalible = avalibleGames });
         }
 
-        public HubResult CreateGame()
+        public HubResult CreateGame(string options)
         {
-            if (_gameService.UsersInGame.ContainsKey(Context.UserIdentifier))
+            if (_activeUserService.HasGameConnections(Context.UserIdentifier))
             {
                 return HubResult.Fail("User already in game.");
             }
-            var game = new MafiaGame(_serviceScopeFactory);
-            
-            _gameService.LiveGames.TryAdd(game.Id, game);
-            _gameService.UsersInGame.TryAdd(Context.UserIdentifier, game.Id);
-            
+
+            _gameService.AddGame(game);
+
+            var game = _gameFactory.Create<MafiaGame>();
             game.AddPlayer(Context.UserIdentifier);
-            game.Update();
+            
+            _activeUserService.AddGameConnection(Context.UserIdentifier, game.Id);
+            
 
             return HubResult.Ok(game.Id);
         }
@@ -64,16 +66,13 @@ namespace Board.Infrastructure.Hubs
 
         public override async Task OnConnectedAsync()
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, "connected");
+            await _activeUserService.Connected(Context.UserIdentifier, Context.ConnectionId);
             await base.OnConnectedAsync();
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, "connected");
-
-            _gameService.RemovePlayer(Context.UserIdentifier);
-
+            _activeUserService.Disconnected(Context.UserIdentifier, Context.ConnectionId);
             await base.OnDisconnectedAsync(exception);
         }
     }

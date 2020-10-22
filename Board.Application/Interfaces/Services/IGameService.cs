@@ -5,9 +5,10 @@ namespace Board.Application.Interfaces.Services
 {
     public interface IGameService
     {
-        Dictionary<string, string> UsersInGame { get; set; }
-        Dictionary<string, IGame> LiveGames { get; set; }
+        ICollection<IGame> Games { get; }
 
-        void RemovePlayer(string playerId);
+        void AddGame(IGame game);
+        void RemoveGame(IGame game);
+        void RemoveGame(string gameId);
     }
 }

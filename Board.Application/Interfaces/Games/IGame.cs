@@ -1,5 +1,4 @@
-﻿using Board.Application.Enumerations;
-using System.Collections.Generic;
+﻿using Boadr.Domain.Enumerations;
 
 namespace Board.Application.Interfaces.Models
 {

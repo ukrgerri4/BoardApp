@@ -1,4 +1,4 @@
-﻿namespace Board.Application.Enumerations
+﻿namespace Boadr.Domain.Enumerations
 {
     public enum GameState
     {
