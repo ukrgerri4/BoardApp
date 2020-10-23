@@ -26,8 +26,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Board.Application\Board.Application.csproj" />
+    <ProjectReference Include="..\Board.Common\Board.Common.csproj" />
     <ProjectReference Include="..\Board.DataLayer\Board.DataLayer.csproj" />
-    <ProjectReference Include="..\Board.Domain\Board.Common.csproj" />
+    <ProjectReference Include="..\Board.Game.Mafia\Board.Game.Mafia.csproj" />
+    <ProjectReference Include="..\Board.Game.Resistance\Board.Game.Resistance.csproj" />
     <ProjectReference Include="..\Board.Infrastructure\Board.Infrastructure.csproj" />
   </ItemGroup>
 

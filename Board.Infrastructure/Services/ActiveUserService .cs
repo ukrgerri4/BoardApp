@@ -1,5 +1,5 @@
-﻿using Boadr.Domain.Models.Common.Services;
-using Board.Application.Interfaces.Services;
+﻿using Board.Application.Interfaces.Services;
+using Board.Application.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,6 +55,8 @@ namespace Board.Infrastructure.Services
                     _users[userId].StartOffline = DateTime.UtcNow;
                 }
             }
+
+            _userConnectionSubscription.OnNext(_users[userId]);
         }
 
         public bool HasGameConnections(string userId) => _users.ContainsKey(userId) && _users[userId].Games.Any();

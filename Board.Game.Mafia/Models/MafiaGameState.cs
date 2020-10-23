@@ -1,6 +1,6 @@
-﻿namespace Boadr.Domain.Enumerations
+﻿namespace Board.Game.Mafia.Models
 {
-    public enum GameState
+    public enum MafiaGameState
     {
         Created = 1,
         Started,

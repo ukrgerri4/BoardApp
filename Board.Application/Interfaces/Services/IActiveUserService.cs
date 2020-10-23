@@ -1,4 +1,4 @@
-﻿using Boadr.Domain.Models.Common.Services;
+﻿using Board.Application.Models;
 using System;
 using System.Threading.Tasks;
 

@@ -14,7 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Boadr.Domain\Boadr.Domain.csproj" />
     <ProjectReference Include="..\Board.Common\Board.Common.csproj" />
     <ProjectReference Include="..\Board.DataLayer\Board.DataLayer.csproj" />
   </ItemGroup>

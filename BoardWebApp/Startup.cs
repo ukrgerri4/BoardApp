@@ -1,10 +1,9 @@
 using Board.Application.Application.Authorization.Commands.Login;
-using Board.Application.Interfaces.Games.Factory;
 using Board.Application.Interfaces.Services;
 using Board.DataLayer;
-using Board.Infrastructure.Games;
-using Board.Infrastructure.Games.Factory;
-using Board.Infrastructure.Hubs;
+using Board.Game.Mafia;
+using Board.Game.Mafia.Extension;
+using Board.Game.Resistance;
 using Board.Infrastructure.Services;
 using Board.Infrastructure.Services.SignalR;
 using BoardWebApp.Extensions;
@@ -135,13 +134,13 @@ namespace BoardApp
             /* FOR SPA */
 
             services.AddMediatR(typeof(LoginCommand));
+            
             services.AddScoped<ITokenService, TokenService>();
             services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
             services.AddSingleton<IGameService, GameService>();
             services.AddSingleton<IActiveUserService, ActiveUserService >();
 
-            services.AddSingleton<IGameFactory, GameFactory>();
-            services.AddTransient<MafiaGame>();
+            services.AddMafiaGame();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

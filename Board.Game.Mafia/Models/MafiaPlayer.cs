@@ -1,10 +1,11 @@
-﻿namespace Boadr.Domain.Models.Mafia
+﻿namespace Board.Game.Mafia.Models
 {
     public class MafiaPlayer
     {
-        public int Id { get; set; }
+        public string Id { get; set; }
         public string Name { get; set; }
         public int Role { get; set; }
         public bool IsLive { get; set; }
+        public bool Connected { get; set; }
     }
 }

@@ -4,7 +4,7 @@ using System;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace Board.Infrastructure.Hubs
+namespace Board.Game.Resistance
 {
     [Authorize]
     public class ResistanceHub : Hub

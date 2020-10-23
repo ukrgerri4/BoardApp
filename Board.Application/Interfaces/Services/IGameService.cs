@@ -1,11 +1,11 @@
-﻿using Board.Application.Interfaces.Models;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace Board.Application.Interfaces.Services
 {
     public interface IGameService
     {
-        ICollection<IGame> Games { get; }
+        ConcurrentDictionary<string, IGame> Games { get; }
 
         void AddGame(IGame game);
         void RemoveGame(IGame game);

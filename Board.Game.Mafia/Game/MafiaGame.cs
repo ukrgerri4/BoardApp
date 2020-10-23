@@ -1,8 +1,7 @@
-﻿using Boadr.Domain.Enumerations;
-using Boadr.Domain.Models.Mafia;
-using Board.Application.Interfaces.Models;
+﻿using Board.Application.Interfaces;
 using Board.Application.Interfaces.Services;
-using Board.Infrastructure.Hubs;
+using Board.Game.Mafia.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -12,7 +11,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
-namespace Board.Infrastructure.Games
+namespace Board.Game.Mafia
 {
     public class MafiaGame : IGame
     {
@@ -20,57 +19,53 @@ namespace Board.Infrastructure.Games
         private readonly IActiveUserService _activeUserService;
         public string Id { get; set; }
         public string Name { get; set; }
-        public GameState State { get; set; }
+        public MafiaGameState State { get; set; }
 
 
         public int MaxPlayers { get; set; }
-        private Dictionary<string, Player> ConnectedPlayerIds { get; set; }
+        private Dictionary<string, Player> ConnectedPlayers { get; set; }
         
         private Subject<Unit> _notifyer = new Subject<Unit>();
         private Subject<Unit> _destroy = new Subject<Unit>();
-
 
         public MafiaGame(IServiceScopeFactory serviceScopeFactory, IActiveUserService activeUserService)
         {
             _serviceScopeFactory = serviceScopeFactory;
             _activeUserService = activeUserService;
 
-            Id = Guid.NewGuid().ToString();
-            Name = $"Game-{Id}";
-            State = GameState.Created;
-            ConnectedPlayerIds = new Dictionary<string, Player>();
+            ConnectedPlayers = new Dictionary<string, Player>();
 
             _activeUserService.OnChange()
                 .TakeUntil(_destroy)
-                .Where(userInfo => ConnectedPlayerIds.ContainsKey(userInfo.UserId))
+                .Where(userInfo => ConnectedPlayers.ContainsKey(userInfo.UserId))
                 .Do(_ => Console.WriteLine($"Game - {Id}. Find user - {_.UserId} - {_.Connected}"))
                 .Subscribe(userInfo =>
                 {
-                    ConnectedPlayerIds[userInfo.UserId].Connected = userInfo.Connected;
+                    ConnectedPlayers[userInfo.UserId].Connected = userInfo.Connected;
                     Update();
                 });
 
             _notifyer.AsObservable()
                 .TakeUntil(_destroy)
-                .Sample(TimeSpan.FromMilliseconds(1000))
-                .Where(_ => State != GameState.Ended)
+                .Sample(TimeSpan.FromMilliseconds(500))
+                .Where(_ => State != MafiaGameState.Ended)
                 .Do(_ => Console.WriteLine($"Game - {Id}"))
                 .Subscribe(_ => Notify());
         }
 
         public void Start()
         {
-            State = GameState.Started;
+            State = MafiaGameState.Started;
         }
 
         public void Pause()
         {
-            State = GameState.Paused;
+            State = MafiaGameState.Paused;
         }
 
         public void End()
         {
-            State = GameState.Ended;
+            State = MafiaGameState.Ended;
             _destroy.OnNext(Unit.Default);
             _destroy.OnCompleted();
             _notifyer.OnCompleted();
@@ -81,16 +76,22 @@ namespace Board.Infrastructure.Games
             _notifyer.OnNext(Unit.Default);
         }
 
-        public void AddPlayer(string userId)
+        public void AddPlayer(IdentityUser user)
         {
-            ConnectedPlayerIds.TryAdd(userId, new Player());
-            _activeUserService.AddGameConnection(userId, Id);
-
+             ConnectedPlayers.TryAdd(user.Id, new Player(user));
+            _activeUserService.AddGameConnection(user.Id, Id);
+            Update();
         }
 
         public void RemovePlayer(string playerId)
         {
-            ConnectedPlayerIds.Remove(playerId);
+            ConnectedPlayers.Remove(playerId);
+            Update();
+        }
+
+        public bool ContainsPlayer(string userId)
+        {
+            return ConnectedPlayers.ContainsKey(userId);
         }
 
         private void Notify()
@@ -99,8 +100,8 @@ namespace Board.Infrastructure.Games
             {
                 var hubContext = scope.ServiceProvider.GetRequiredService<IHubContext<MafiaHub>>();
                 hubContext.Clients
-                    .Users(ConnectedPlayerIds.Keys.ToList())
-                    .SendAsync("game-state", GameStatePacket());
+                    .Users(ConnectedPlayers.Keys.ToList())
+                    .SendAsync("upd-state", GameStatePacket());
             }
         }
 
@@ -110,33 +111,58 @@ namespace Board.Infrastructure.Games
             { 
                 Id = Id,
                 Name = Name,
-                Capacity = $"{MaxPlayers}/{ConnectedPlayerIds.Count}"
+                Capacity = $"{MaxPlayers}/{ConnectedPlayers.Count}"
             };
         }
 
-        private object GameStatePacket()
+        public object GameStatePacket()
         {
-            return new
+            return new MafiaStatePacket
             {
-                State,
+                State = State,
+                Players = ConnectedPlayers.Values
+                    .Where(p => p.Connected)
+                    .Select(p => new MafiaPlayer
+                    {
+                        Id = p.UserId,
+                        Name = p.Name,
+                        IsLive = p.IsLive,
+                        Role = (int)p.Role,
+                        Connected = p.Connected
+                    })
             };
         }
 
         private class Player
         {
-            public Player(string userId, int gameId, string name, bool connected)
+            public Player(IdentityUser user)
             {
-                UserId = userId;
-                PlayerId = gameId;
-                Name = name;
-                Connected = connected;
+                UserId = user.Id;
+                Name = user.UserName;
+                Connected = true;
+                IsLive = true;
+                IsHost = false;
+                Role = MafiaRole.Undefined;
             }
 
             public string UserId { get; set; }
-            public int PlayerId { get; set; }
             public string Name { get; set; }
+            public MafiaRole Role { get; set; }
             public bool Connected { get; set; }
+            public bool IsLive { get; set; }
             public bool IsHost { get; set; }
+        }
+
+        private enum MafiaRole
+        {
+            Undefined,
+            Сivilian,
+            Chief,
+            Doctor,
+            Mafia,
+            DonMafia,
+            Maniac,
+            Whore
         }
     }
 }

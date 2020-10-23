@@ -1,4 +1,4 @@
-﻿namespace Boadr.Domain.Models.Mafia
+﻿namespace Board.Game.Mafia.Models
 {
     public class MafiaConnectInfo
     {

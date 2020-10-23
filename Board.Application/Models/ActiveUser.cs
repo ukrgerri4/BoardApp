@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Boadr.Domain.Models.Common.Services
+namespace Board.Application.Models
 {
     public class ActiveUser
     {
@@ -11,6 +11,7 @@ namespace Boadr.Domain.Models.Common.Services
             UserId = userId;
             Name = name;
             Connections = connections != null ? new HashSet<string>(connections) : new HashSet<string>();
+            Games = new HashSet<string>();
             StartOffline = null;
         }
 
@@ -35,12 +36,12 @@ namespace Boadr.Domain.Models.Common.Services
 
         public void AddGame(string connectionId)
         {
-            Connections.Add(connectionId);
+            Games.Add(connectionId);
         }
 
         public void RemoveGame(string connectionId)
         {
-            Connections.Remove(connectionId);
+            Games.Remove(connectionId);
         }
     }
 }
